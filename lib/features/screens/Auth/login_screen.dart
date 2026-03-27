@@ -211,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
     await TokenManager.saveBool('SaveLogin', _rememberMe);
 
     Fluttertoast.showToast(
-      msg: 'Test login successful!',
+      msg: 'Test login successful',
       backgroundColor: Colors.green,
     );
 

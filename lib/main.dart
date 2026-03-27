@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'core/services/token_service.dart';
 import 'features/screens/Auth/login_screen.dart';
+import 'features/screens/Dashboard/dashboard.dart';
 import 'features/screens/Splash Screen/splash_screen.dart';
 
 
@@ -46,8 +47,8 @@ class MyApp extends StatelessWidget {
       // ── Named routes ─────────────────────────────────────────────────────
       routes: {
         '/splash': (_) => const SplashScreen(),
-        '/login': (_) => const LoginScreen(),
-        '/home': (_) => const HomeScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/dashboard': (context) => const DashboardScreen(),
       },
     );
   }

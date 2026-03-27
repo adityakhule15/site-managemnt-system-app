@@ -7,12 +7,6 @@ import 'package:http/http.dart' as http;
 import '../../../core/services/token_service.dart';
 import '../../../core/utils/token_manager.dart';
 
-
-// ─────────────────────────────────────────────
-//  Replace with your actual home/dashboard screen
-// ─────────────────────────────────────────────
-// import '../home/home_screen.dart';
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -58,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _navigateToHome() {
-    Navigator.pushReplacementNamed(context, '/home');
+    Navigator.pushReplacementNamed(context, '/dashboard');
   }
 
   // ── Connectivity check ────────────────────────
@@ -104,6 +98,9 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // Clear any existing tokens before new login
+      await TokenManager.clearAll();
+
       // ── POST /api/login/ ──────────────────────
       // Adjust the URL & payload keys to match your backend.
       final response = await http.post(
@@ -184,6 +181,44 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // ── Test login for development (without API) ──
+  Future<void> _testLogin() async {
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (username.isEmpty || password.isEmpty) {
+      Fluttertoast.showToast(
+        msg: 'Please enter username and password',
+        toastLength: Toast.LENGTH_SHORT,
+        backgroundColor: Colors.orange,
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    // Simulate network delay
+    await Future.delayed(const Duration(seconds: 1));
+
+    // Clear any existing tokens
+    await TokenManager.clearAll();
+
+    // Save test data
+    await TokenManager.saveAccessToken('test_token_${DateTime.now().millisecondsSinceEpoch}');
+    await TokenManager.saveRefreshToken('test_refresh_${DateTime.now().millisecondsSinceEpoch}');
+    await TokenManager.saveUserId(1);
+    await TokenManager.saveUserName(username);
+    await TokenManager.saveBool('SaveLogin', _rememberMe);
+
+    Fluttertoast.showToast(
+      msg: 'Test login successful!',
+      backgroundColor: Colors.green,
+    );
+
+    _navigateToHome();
+    setState(() => _isLoading = false);
+  }
+
   // ─────────────────────────────────────────────
   //  BUILD
   // ─────────────────────────────────────────────
@@ -207,8 +242,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     // ── Card ─────────────────────
                     _buildCard(),
                     // ── Footer ───────────────────
-
-
                   ],
                 ),
               ),
@@ -294,29 +327,41 @@ class _LoginScreenState extends State<LoginScreen> {
           _buildSignInButton(),
           const SizedBox(height: 20),
 
-
-
+          // Test mode button (remove in production)
+          _buildTestButton(),
         ],
+      ),
+    );
+  }
+
+  // ── Test button for development ────────────────
+  Widget _buildTestButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: _isLoading ? null : _testLogin,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.orange,
+          side: const BorderSide(color: Colors.orange),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: const Text('TEST MODE (Skip API)'),
       ),
     );
   }
 
   // ─────────────────────────────────────────────
   //  Logo — image container
-  //  1. Add your logo file to:  assets/images/logo.png
-  //  2. Register it in pubspec.yaml:
-  //       flutter:
-  //         assets:
-  //           - assets/images/logo.png
   // ─────────────────────────────────────────────
   Widget _buildLogo() {
     return SizedBox(
       width: 180,
       height: 80,
       child: Image.asset(
-        'assets/images/logo.png',   // ← update path if needed
+        'assets/images/logo.png',
         fit: BoxFit.contain,
-        // Fallback shown while asset is not yet added
         errorBuilder: (context, error, stackTrace) {
           return Container(
             width: 180,
